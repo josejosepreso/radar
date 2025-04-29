@@ -63,34 +63,41 @@ makePaths xs = let first = head xs
     findPaths first ((a, b):(c, d):xs) = [((a, c), (b, d))]
                                          ++ findPaths first ((c, d):xs)
 
+axis :: Point
+     -> Point
+     -> Float
+     -> [Picture]
+axis p1 p2 s
+  | s <= 0 = []
+  | otherwise = let p' = scaleV s p1
+                    p'' = scaleV s p2
+                    x = fst p'
+                    y = snd p'
+                in [ Pictures [ Line [ p', p'' ]
+                              , Translate x y $ Scale scoreS scoreS $ Text $ show (round $ s * 100)
+                              ]
+                   ] ++ axis p1 p2 (s - 0.2)
+
+picture :: [((Point, Point), (Point, Point))]
+        -> [String]
+        -> [Picture]
 picture [] _ = []
 picture ((pp1, pp2):xs) (l:ls) =
   [ Pictures [ Line [ fst pp1, snd pp1 ]
+             , Translate (fst . scaleV 1.05 . fst $ pp1) (snd . scaleV 1.05 . fst $ pp1)
+               $ Scale labelS labelS
+               $ Text l
              , Translate (fst . fst $ pp1) (snd . fst $ pp1)
                $ Scale scoreS scoreS
                $ Text "100"
              , Line [ fst pp2, snd pp2 ]
              , Translate (fst . fst $ pp2) (snd . fst $ pp2)
                $ circleSolid 5
-             , Translate ((+) 5 . fst . fst $ pp2) (snd . fst $ pp2)
-               $ Scale labelS labelS
-               $ Text l
              , Line [ (0, 0), fst pp1 ]
              ]
   ]
   ++ picture xs ls
   ++ axis (fst pp1) (snd pp1) (1 - 0.2)
-  where
-    axis p1 p2 s
-      | s <= 0 = []
-      | otherwise = let p' = scaleV s p1
-                        p'' = scaleV s p2
-                        x = fst p'
-                        y = snd p'
-                    in [ Pictures [ Line [ p', p'' ]
-                                  , Translate x y $ Scale scoreS scoreS $ Text $ show (round $ s * 100)
-                                  ]
-                       ] ++ axis p1 p2 (s - 0.2)
 
 chart [] = pure ()
 chart pairs = display window background
