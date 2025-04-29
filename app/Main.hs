@@ -22,6 +22,7 @@ background = white
 readCsv = readFile "data.csv"
           >>= pure
           . map parsePair
+          . filter (/= "")
           . lines
 
 parsePair :: String
