@@ -64,43 +64,46 @@ makePaths xs = let first = head xs
                                          ++ findPaths first ((c, d):xs)
 
 picture [] _ = []
-picture ((pp1, pp2):xs) (l:ls) = [ Pictures [ Line [ fst pp1, snd pp1 ]
-                                            , Translate (fst . fst $ pp1) (snd . fst $ pp1)
-                                              $ Scale scoreS scoreS
-                                              $ Text "100"
-                                            , Line [ fst pp2, snd pp2 ]
-                                            , Translate (fst . fst $ pp2) (snd . fst $ pp2)
-                                              $ circleSolid 5
-                                            , Translate ((+) 5 . fst . fst $ pp2) (snd . fst $ pp2)
-                                              $ Scale labelS labelS
-                                              $ Text l
-                                            , Line [ (0, 0), fst pp1 ]
-                                            ]
-                                 ]
-                                 ++ picture xs ls
-                                 ++ axis (fst pp1) (snd pp1) (1 - 0.2)
-  where axis p1 p2 s
-          | s <= 0 = []
-          | otherwise = let p' = scaleV s p1
-                            p'' = scaleV s p2
-                            x = fst p'
-                            y = snd p'
-                        in [ Pictures [ Line [ p', p'' ]
-                                      , Translate x y $ Scale scoreS scoreS $ Text $ show (round $ s * 100)
-                                      ]
-                           ] ++ axis p1 p2 (s - 0.2)
+picture ((pp1, pp2):xs) (l:ls) =
+  [ Pictures [ Line [ fst pp1, snd pp1 ]
+             , Translate (fst . fst $ pp1) (snd . fst $ pp1)
+               $ Scale scoreS scoreS
+               $ Text "100"
+             , Line [ fst pp2, snd pp2 ]
+             , Translate (fst . fst $ pp2) (snd . fst $ pp2)
+               $ circleSolid 5
+             , Translate ((+) 5 . fst . fst $ pp2) (snd . fst $ pp2)
+               $ Scale labelS labelS
+               $ Text l
+             , Line [ (0, 0), fst pp1 ]
+             ]
+  ]
+  ++ picture xs ls
+  ++ axis (fst pp1) (snd pp1) (1 - 0.2)
+  where
+    axis p1 p2 s
+      | s <= 0 = []
+      | otherwise = let p' = scaleV s p1
+                        p'' = scaleV s p2
+                        x = fst p'
+                        y = snd p'
+                    in [ Pictures [ Line [ p', p'' ]
+                                  , Translate x y $ Scale scoreS scoreS $ Text $ show (round $ s * 100)
+                                  ]
+                       ] ++ axis p1 p2 (s - 0.2)
 
 chart [] = pure ()
 chart pairs = display window background
               . Pictures
-              $ [ polygon ]
+              $ polygon
               ++ radar
   where
     paths = makePaths . points $ pairs
-    polygon = (color $ dark red)
-              $ Polygon
-              . map (snd . snd)
-              $ paths
+    polygon = [ (color $ dark red)
+                $ Polygon
+                . map (snd . snd)
+                $ paths
+              ]
     radar = picture paths
             $ map fst pairs
 
