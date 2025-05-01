@@ -1,6 +1,8 @@
 module Logic ( scaleV
              , getNetCoordinates
-             , makePaths
+             , flatten
+             , equal
+             , equalSize
              ) where
 
 type Point = (Float, Float)
@@ -9,13 +11,10 @@ d, r :: Float
 d = 500
 r = d / 2
 
-scaleV :: Float
-       -> Point
-       -> Point
+scaleV :: Float -> Point -> Point
 scaleV n (a, b) = (n * a, n * b)
 
-getNetCoordinates :: Int
-                  -> [Point]
+getNetCoordinates :: Int -> [Point]
 getNetCoordinates n = [ coord j
                       | j <- [1 .. n]
                       ]
@@ -26,11 +25,20 @@ getNetCoordinates n = [ coord j
                   y = r * sin (idx * 2 * pi / size)
               in (x, y)
 
-makePaths :: [Point]
-          -> [(Point, Point)]
-makePaths [] = []
-makePaths xs = findPaths (head xs) xs
-  where
-    findPaths first [p]        = [(p, first)]
-    findPaths first (p1:p2:ys) = [(p1, p2)]
-                                 ++ findPaths first (p2:ys)
+flatten :: [[a]] -> [a]
+flatten [] = []
+flatten (x:xs) = [] ++ x ++ flatten xs
+
+equal :: Eq a => [[a]] -> Bool
+equal [] = False
+equal xs = let pivot = head xs
+           in areEq pivot xs
+  where areEq _ [] = True
+        areEq p (y:ys) = p == y && areEq p ys
+
+equalSize :: [[a]] -> Bool
+equalSize [] = False
+equalSize xs = let size = length . head $ xs
+               in sameSize size xs
+  where sameSize _ [] = True
+        sameSize n (y:ys) = length y == n && sameSize n ys

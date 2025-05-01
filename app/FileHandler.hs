@@ -12,7 +12,7 @@ notDuplicate :: Eq a => [a] -> [a]
 notDuplicate [] = []
 notDuplicate (x:xs)
   | x `elem` xs = notDuplicate xs
-  | otherwise = [x] ++ notDuplicate xs
+  | otherwise = x:(notDuplicate xs)
 
 groupById :: [(Int, String, Float)]
           -> [[(String, Float)]]
